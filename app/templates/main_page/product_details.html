@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Details | Aurora Cadence{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/product_details.css' %}">
+
+<div class="container">
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6">
+            <div class="product-images-section">
+                <div class="main-image-container">
+
+                    <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}"
+                        class="main-product-image">
+
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <div class="sub-images-container d-flex justify-content-center">
+                    <img src="{{ product.image.url }}" class="sub-image active" onclick="changeMainImage(this)">
+                    {% if product.image2 %}<img src="{{ product.image2.url }}" class="sub-image"
+                        onclick="changeMainImage(this)">{% endif %}
+                    {% if product.image3 %}<img src="{{ product.image3.url }}" class="sub-image"
+                        onclick="changeMainImage(this)">{% endif %}
+                    {% if product.image4 %}<img src="{{ product.image4.url }}" class="sub-image"
+                        onclick="changeMainImage(this)">{% endif %}
+                    {% if product.image5 %}<img src="{{ product.image5.url }}" class="sub-image"
+                        onclick="changeMainImage(this)">{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="product-details">
+                <span class="product-type">Premium Collection</span>
+                <h1 class="product-title">{{ product.name }}</h1>
+
+                <div class="category-info">Category: <span>{{ product.category_obj.name }}</span></div>
+                <p class="details-price">
+                    <span class="text-decoration-line-through text-muted me-2">₹{{ product.price }}</span>
+                    <span class="details-price fw-semibold">₹{{ product.discount_price }}</span>
+                </p>
+                <p class="product-desc">{{ product.description }}</p>
+
+                <div class="features-section mb-4">
+                    <h6>Premium Features:</h6>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check-circle"></i>18K Gold Plated Finish</li>
+                        <li><i class="fas fa-check-circle"></i>Precision-Cut Crystal Stone</li>
+                        <li><i class="fas fa-check-circle"></i>Tarnish Resistant Coating</li>
+                        <li><i class="fas fa-check-circle"></i>Hypoallergenic Materials</li>
+                    </ul>
+                </div>
+
+                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning"><i class="fas fa-shopping-cart me-1"></i> Add To Cart</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Related Products Section -->
+<div class="container py-4">
+    <div class="row">
+        <h3 class="section-title">You Might Also Like</h3>
+
+        <section class="bg-black">
+            <div class="container-fluid product-section">
+                <div class="product-carousel">
+                    {% if related_products %}
+                        {% for p in related_products %}
+                        <div class="product-card text-center position-relative">
+
+                            <!-- Stock Badge -->
+                            {% if p.stock|default:0 <= 0 %}
+                                <span class="badge bg-danger position-absolute top-0 start-0" style="font-size: 12px;">
+                                    Out of Stock
+                                </span>
+                            {% elif p.stock|default:0 < 6 %}
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-0" style="font-size: 12px;">
+                                    Only {{ p.stock }} left
+                                </span>
+                            {% endif %}
+
+                            <!-- Wishlist Button -->
+                            <a href="{% url 'add_to_wishlist' p.id %}" 
+                               class="position-absolute top-0 end-0 m-2" 
+                               title="Add to Wishlist">
+                                <i class="fa fa-heart {% if p.id in wishlist_ids %}text-danger{% else %}text-white{% endif %}" 
+                                   style="font-size: 28px;"></i>
+                            </a>
+
+                            <!-- Product Image & Info -->
+                            <a href="{% url 'product_details' p.id %}" class="text-decoration-none">
+                                <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                                <div class="product-name">{{ p.name }}</div>
+                                <div class="actual-price">₹{{ p.price }}</div>
+                                <div class="product-price text-warning">₹{{ p.discount_price }}</div>
+                            </a>
+
+                            <!-- Add to Cart / Notify Me -->
+                            {% if p.stock|default:0 > 0 %}
+                                <a href="{% url 'add_to_cart' p.id %}" class="btn btn-warning mt-2">Add to Cart</a>
+                            {% else %}
+                                <button class="btn btn-success mt-2">Notify Me</button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-white mx-auto d-flex justify-content-center">
+                            No related products found.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+
+<script>
+    function changeMainImage(clickedImage) {
+        const mainImage = document.getElementById('mainImage');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Show loading overlay
+        loadingOverlay.classList.add('active');
+
+        // Remove active class from all sub-images
+        document.querySelectorAll('.sub-image').forEach(img => {
+            img.classList.remove('active');
+        });
+
+        // Add active class to clicked image
+        clickedImage.classList.add('active');
+
+        // Simulate loading time for smooth transition
+        setTimeout(() => {
+            mainImage.src = clickedImage.src;
+            mainImage.alt = clickedImage.alt;
+
+            // Hide loading overlay after image loads
+            mainImage.onload = () => {
+                loadingOverlay.classList.remove('active');
+            };
+        }, 300);
+    }
+
+    function addToCart() {
+        const button = document.querySelector('.btn-add-cart');
+        const originalText = button.innerHTML;
+
+        // Change button state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+        button.disabled = true;
+
+        // Simulate API call
+        setTimeout(() => {
+            button.innerHTML = '<i class="fas fa-check me-2"></i>Added to Cart!';
+            button.style.background = 'linear-gradient(135deg, #28a745, #34ce57)';
+
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = 'linear-gradient(135deg, #d4af37 0%, #f4e4bc 50%, #d4af37 100%)';
+                button.disabled = false;
+            }, 2000);
+        }, 1500);
+    }
+
+    // Add smooth scrolling for better UX
+    document.addEventListener('DOMContentLoaded', function () {
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe related products
+        document.querySelectorAll('.related-product').forEach(product => {
+            product.style.opacity = '0';
+            product.style.transform = 'translateY(20px)';
+            product.style.transition = 'all 0.6s ease';
+            observer.observe(product);
+        });
+    });
+</script>
+
+
+
+{% endblock %}

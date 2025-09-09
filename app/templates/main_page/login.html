@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Aurora Cadence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JS (must be after jQuery if using Bootstrap 4, but for Bootstrap 5 no jQuery needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <style>
+        body, html {
+            height: 100%;
+            background-image: url("{% static 'images/bg-login.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .login-card {
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .card-img-left {
+            background: url("{% static 'image/ring11.jpg' %}") no-repeat center center;
+            background-size: cover;
+        }
+
+        .google-btn {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .google-btn:hover {
+            background-color: #f8f8f8;
+        }
+
+        @media (max-width: 768px) {
+            .card-img-left {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center vh-100">
+ 
+    <div class="login-card shadow-lg row w-100 m-3">
+        <!-- Left image -->
+        <div class="col-md-6 card-img-left d-none d-md-block"></div>
+
+        <!-- Right login form -->
+        <div class="col-md-6 p-5 d-flex align-items-center">
+            <div class="w-100">
+                <h2 class="mb-4 fw-bold text-center">Login to Aurora Cadence</h2>
+                <!-- Message alerts -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show border border-2 text-danger" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn google-btn w-100 mb-3 border border-4 rounded-4">
+                    <img src="{% static 'images/googl.webp' %}" width="20" height="20" alt="Google Icon">
+                    Continue with Google
+                </a>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">© 2025 Aurora Cadence</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

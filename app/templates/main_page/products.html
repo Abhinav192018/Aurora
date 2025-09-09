@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Products | Aurora Cadence{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
+
+<body class="bg-black text-white">
+
+    <div class="container py-5">
+         {% if messages %}
+        <div class="container mt-3" data-aos="slide-right">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10 col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+        </div>
+        {% endif %}
+
+        <!-- Show applied filters -->
+        {% if selected_type or selected_wear or selected_gift or search_query or request.GET.min_price or request.GET.max_price %}
+        <div class="mb-4">
+            <strong>Applied Filters:</strong>
+            <ul class="mb-0">
+                {% if selected_type %}<li>Type: {{ selected_type }}</li>{% endif %}
+                {% if selected_wear %}<li>Wear: {{ selected_wear }}</li>{% endif %}
+                {% if selected_gift %}<li>Gift: {{ selected_gift }}</li>{% endif %}
+                {% if search_query %}<li>Search: {{ search_query }}</li>{% endif %}
+                {% if request.GET.min_price %}<li>Min Price: ₹{{ request.GET.min_price }}</li>{% endif %}
+                {% if request.GET.max_price %}<li>Max Price: ₹{{ request.GET.max_price }}</li>{% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Filter Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <button class="btn btn-warning px-4" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel-fill me-2"></i> Filter
+            </button>
+        </div>
+
+        <!-- Filter Modal -->
+        <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white">
+                    <form method="GET" action="">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="filterModalLabel">Filter Products</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <!-- Type -->
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Type</label>
+                                <select class="form-select" id="type" name="type">
+                                    <option value="">All</option>
+                                    <option value="Ring">Ring</option>
+                                    <option value="Earring">Earring</option>
+                                    <option value="Bracelet">Bracelet</option>
+                                    <option value="Necklace">Necklace</option>
+                                    <option value="Anklet">Anklet</option>
+                                    <option value="Bangle">Bangle</option>
+                                    <option value="Sets">Sets</option>
+                                </select>
+                            </div>
+
+                            <!-- Wear -->
+                            <div class="mb-3">
+                                <label for="wear" class="form-label">Wear Type</label>
+                                <select class="form-select" id="wear" name="wear">
+                                    <option value="">All</option>
+                                    <option value="Daily">Daily</option>
+                                    <option value="Party">Party</option>
+                                </select>
+                            </div>
+
+                            <!-- Gift -->
+                            <div class="mb-3">
+                                <label for="gift" class="form-label">Gift For</label>
+                                <select class="form-select" id="gift" name="gift">
+                                    <option value="">All</option>
+                                    <option value="Wife">Wife</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Girlfriend">Girlfriend</option>
+                                    <option value="Sister">Sister</option>
+                                </select>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Price Range (₹)</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" class="form-control" name="min_price" placeholder="Min">
+                                    <input type="number" class="form-control" name="max_price" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="reset" class="btn btn-secondary">Reset</button>
+                            <button type="submit" class="btn" style="background-color: orange;">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+{% if products %}
+    {% if selected_type or selected_wear or selected_gift or search_query or request.GET.min_price or request.GET.max_price %}
+        <p>{{ products|length }} product{{ products|length|pluralize }} found</p>
+    {% endif %}
+
+        <div class="row g-4">
+            {% for p in products %}
+    <div class="col-6 col-md-3">
+        <div class="product-card text-center position-relative">
+
+            <!-- Out of Stock Badge -->
+            {% if p.stock|default:0 <= 0 %}
+                <span class="badge bg-danger position-absolute top-0 start-0" style="font-size: 12px;">
+                    Out of Stock
+                </span>
+            {% elif p.stock|default:0 < 6 %}
+                <span class="badge bg-warning text-dark position-absolute top-0 start-0" style="font-size: 12px;">
+                    Only {{ p.stock }} left
+                </span>
+            {% endif %}
+
+
+            <!-- Wishlist Button -->
+            <a href="{% url 'add_to_wishlist' p.id %}" 
+               class="position-absolute top-0 end-0 m-2" 
+               title="Add to Wishlist">
+                <i class="fa fa-heart {% if p.id in wishlist_ids %}text-danger{% else %}text-white{% endif %}" 
+                   style="font-size: 28px;"></i>
+            </a>
+
+            <!-- Product Image & Link -->
+            <a href="{% url 'product_details' p.id %}" class="text-decoration-none">
+                <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                <div class="product-name">{{ p.name }}</div>
+                <div class="actual-price">₹{{ p.price }}</div>
+                <div class="product-price text-warning">₹{{ p.discount_price }}</div>
+            </a>
+
+            <!-- Add to Cart / Notify Me -->
+            {% if p.stock|default:0 > 0 %}
+                <a href="{% url 'add_to_cart' p.id %}" class="btn btn-warning mt-2">Add to Cart</a>
+            {% else %}
+                <button class="btn btn-success mt-2">Notify Me</button>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+
+        </div>
+        {% else %}
+        <div class="text-center my-5">
+            <h4 class="text-white">No products found!</h4>
+            <p class="text-white">Try adjusting your filters or search terms.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</body>
+{% endblock %}

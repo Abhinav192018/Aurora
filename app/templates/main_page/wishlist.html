@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #000;
+        color: white;
+    }
+
+    .wishlist-container {
+        padding: 2rem;
+    }
+
+    .wishlist-card {
+        background-color: #1a1a1a;
+        border: 2px solid orange;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .wishlist-card:hover {
+        transform: scale(1.01);
+    }
+
+    .wishlist-card img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        border: 2px solid orange;
+    }
+
+    .product-info h6 {
+        margin-bottom: 0.3rem;
+        font-size: 1.1rem;
+    }
+
+    .product-info p {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .action-btns button {
+        border: 2px solid orange;
+        color: orange;
+        background: transparent;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .action-btns button:hover {
+        background-color: orange;
+        color: black;
+    }
+
+    .wishlist-title {
+        border-bottom: 1px solid orange;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container wishlist-container">
+    <h4 class="wishlist-title">
+        <i class="fas fa-heart me-2"></i>My Wishlist
+    </h4>
+
+    {% if wishlist_items %}
+        {% for item in wishlist_items %}
+        <div class="wishlist-card d-flex align-items-center justify-content-between flex-wrap">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                <div class="product-info">
+                    <h6>{{ item.product.name }}</h6>
+                    <p class="text-white mb-1">₹{{ item.product.discount_price }}</p>
+
+                    {% if item.product.stock > 0 %}
+                        <p class="text-success mb-0">In Stock</p>
+                    {% else %}
+                        <p class="text-danger mb-0">Out of Stock</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="action-btns d-flex gap-2 mt-3 mt-md-0">
+                {% if item.product.stock > 0 %}
+                    <a href="{% url 'add_to_cart' item.product.id %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-shopping-cart "></i>
+                    </a>
+                {% else %}
+                    <button class="btn btn-sm btn-secondary" disabled>
+                        <i class="fas fa-shopping-cart me-1"></i>
+                    </button>
+                {% endif %}
+
+                <a href="{% url 'delete_from_wishlist' item.product.id %}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash "></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-white">Your wishlist is empty.</p>
+    {% endif %}
+</div>
+
+
+{% endblock %}

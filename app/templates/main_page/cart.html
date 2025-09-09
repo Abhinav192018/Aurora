@@ -1,0 +1,104 @@
+{%extends 'base.html'%}
+{%load static%}
+{% block title %}My cart | Aurora Cadence{% endblock %}
+
+{%block content%}
+<link rel="stylesheet" href="{%static 'css/cart.css'%}">
+
+
+<div class="container py-5">
+  {% if messages %}
+        <div class="container mt-3" data-aos="slide-right">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10 col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+        </div>
+        {% endif %}
+  <div class="row">
+
+    <h3 class="mb-4"><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+
+    <!-- Left: Cart Items -->
+    <div class="col-lg-8">
+      {% if items %}
+      {% for item in items %}
+      <div class="cart-item d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+            style="width: 80px; height: 80px; object-fit: cover;">
+          <div>
+            <h6 class="mb-1">{{ item.product.name }}</h6>
+            <p class=" mb-0 ">₹{{ item.product.discount_price }}</p>
+          </div>
+        </div>
+        <div class="quantity-box d-flex align-items-center gap-2">
+          <a href="{% url 'update_cart_quantity' item.id 'decrease' %}" class="btn btn-outline-secondary btn-sm"><i
+              class="fas fa-minus"></i></a>
+          <span class="qty">{{ item.quantity }}</span>
+          <a href="{% url 'update_cart_quantity' item.id 'increase' %}" class="btn btn-outline-secondary btn-sm"><i
+              class="fas fa-plus"></i></a>
+        </div>
+        <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-outline-danger btn-sm"><i
+            class="fas fa-trash"></i></a>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-white">Your cart is empty.</p>
+      <p class="text-white">Add Products <a href="{% url 'products' %}" class="text-decoration-none text-warning border border-success border-5 rounded-pill p-2"><i class="fas fa-cart-plus"></i></a></p>
+      {% endif %}
+    </div>
+
+    <!-- Right: Price Summary -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+      <div class="price-summary p-3 border rounded shadow-sm bg-lightvtext-black">
+        <h5 class="mb-3"><i class="fas fa-file-invoice"></i> Price Summary</h5>
+
+        <div class="summary-item d-flex justify-content-between mb-2">
+          <span>Original Price</span>
+          <span>₹{{ original_total }}</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between mb-2 text-success">
+          <span>Discount</span>
+          <span>₹{{discount_amount }}</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between fw-bold">
+          <span>Total Amount</span>
+          <span>₹{{ discounted_total }}</span>
+        </div>
+        <a href="{% url 'checkout' %}" class="btn btn-warning w-100 mt-3">
+          <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Dynamic Quantity -->
+<script>
+  function increaseQty(btn) {
+    const span = btn.parentElement.querySelector('.qty');
+    let current = parseInt(span.innerText);
+    span.innerText = current + 1;
+  }
+
+  function decreaseQty(btn) {
+    const span = btn.parentElement.querySelector('.qty');
+    let current = parseInt(span.innerText);
+    if (current > 1) {
+      span.innerText = current - 1;
+    }
+  }
+</script>
+
+
+
+
+
+{%endblock%}

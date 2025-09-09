@@ -1,0 +1,85 @@
+body {
+      background-color: #000;
+      color: white;
+    }
+
+    .cart-item {
+      border: 2px solid orange;
+      border-radius: 1rem;
+      padding: 1rem;
+      background-color: #1a1a1a;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    .cart-item:hover {
+      transform: scale(1.01);
+    }
+
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+
+    .quantity-box button {
+      background-color: orange;
+      border: none;
+      padding: 6px 12px;
+      font-weight: bold;
+      color: black;
+      border-radius: 6px;
+    }
+
+    .quantity-box span {
+      min-width: 30px;
+      display: inline-block;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .delete-btn {
+      background-color: transparent;
+      border: 2px solid orange;
+      color: orange;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .delete-btn:hover {
+      background-color: orange;
+      color: black;
+    }
+
+    .price-summary {
+      background-color: #1a1a1a;
+      border: 2px solid orange;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .price-summary h5 {
+      border-bottom: 1px solid orange;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .checkout-btn {
+      background-color: orange;
+      color: black;
+      border: none;
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      width: 100%;
+    }
+
+    .checkout-btn:hover {
+      background-color: #ffa600;
+    }

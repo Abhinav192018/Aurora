@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Orders | Aurora Cadence{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/my_orders.css' %}">
+
+<div class="orders-container my-2">
+
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Orders Loop Starts -->
+    <div class="orders-grid ">
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card my-3" data-aos="fade-up">
+                <div class="order-header">
+                    <div class="order-info">
+                        <div class="order-id">
+                            <i class="fas fa-hashtag"></i>
+                            Order #{{ order.id }}
+                        </div>
+                        <div class="order-dates">
+                            <div class="order-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                Placed: {{ order.ordered_at|date:"M d, Y" }}
+                            </div>
+                            {% if order.estimated_delivery %}
+                            <div class="delivery-date">
+                                <i class="fas fa-truck"></i>
+                                Expected: {{ order.estimated_delivery|date:"M d, Y" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="order-status-section">
+                        <div class="status-badge status-{{ order.payment_status|lower }}">
+                            <i class="fas fa-credit-card"></i>
+                            <span>{{ order.payment_status }}</span>
+                        </div>
+                        <div class="order-status-badge status-{{ order.status|lower }}">
+                            <i class="fas fa-box"></i>
+                            <span>{{ order.status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+          
+
+                <div class="products-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-gem"></i>
+                        Order Items ({{ order.order_items.count }})
+                    </h4>
+                    <div class="products-list">
+                        {% for item in order.order_items.all %}
+                        <div class="product-item">
+                            <div class="product-image">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            </div>
+                            <div class="product-details">
+                                <div class="product-name">{{ item.product.name }}</div>
+                                <div class="product-meta">
+                                    <span class="product-category">{{ item.product.category_obj.name }} - {{ item.product.type_obj.name }}</span>
+                                    <span class="product-quantity">Qty: {{ item.quantity }}</span>
+                                </div>
+                                <div class="product-pricing">
+                                    {% if item.price_at_time != item.discount_price_at_time %}
+                                    <span class="original-price">₹{{ item.price_at_time }}</span>
+                                    {% endif %}
+                                    <span class="final-price">₹{{ item.discounted_total }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if order.shipping_address %}
+                <div class="shipping-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Shipping Address
+                    </h4>
+                    <div class="address-card">
+                        <div class="address-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="address-details">
+                            <div class="address-name">{{ order.shipping_address.full_name }}</div>
+                            <div class="address-phone">{{ order.shipping_address.phone }}</div>
+                            <div class="address-location">
+                                {{ order.shipping_address.street }}, {{ order.shipping_address.city }}<br>
+                                {{ order.shipping_address.state }} - {{ order.shipping_address.pincode }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="order-summary">
+                    <div class="summary-item">
+                        <span>Subtotal:</span>
+                        <span>₹{{ order.total_price }}</span>
+                    </div>
+                    <div class="summary-item total">
+                        <span>Total Amount:</span>
+                        <span>₹{{ order.total_price }}</span>
+                    </div>
+                </div>
+
+                {% if order.payment_id or order.razorpay_order_id %}
+                <div class="payment-details">
+                    <h4 class="section-title">
+                        <i class="fas fa-receipt"></i>
+                        Payment Details
+                    </h4>
+                    <div class="payment-info">
+                        {% if order.payment_id %}
+                        <div class="payment-item">
+                            <span class="label">Payment ID:</span>
+                            <span class="value">{{ order.payment_id }}</span>
+                        </div>
+                        {% endif %}
+                        {% if order.razorpay_order_id %}
+                        <div class="payment-item">
+                            <span class="label">Razorpay Order:</span>
+                            <span class="value">{{ order.razorpay_order_id }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-orders">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h3>No Orders Yet</h3>
+                    <p>You haven't placed any orders yet. Start shopping to see your order history here.</p>
+                    <a href="{% url 'products' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        Start Shopping
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background-color: #000; min-height: 100vh;">
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3" data-aos="slide-right">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10 col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- LEFT: Address Selection -->
+        <div class="col-lg-6 col-md-6 col-12">
+            <div class="p-4 border rounded shadow h-100" style="border-color: #ff7b00; background-color: #111;">
+                <h2 class="text-white mb-4 text-center"><i class="fas fa-map-marker-alt text-orange me-2"></i> Select Delivery Address</h2>
+
+                <form id="checkout-form" method="POST" action="{% url 'payment_success' %}">
+                    {% csrf_token %}
+
+                    <!-- Addresses -->
+                    {% if addresses %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for addr in addresses %}
+                        <!-- Address card -->
+                        <div class="p-3 border rounded d-flex justify-content-between align-items-start mb-3 text-white flex-wrap"
+                            style="border-color: #ff7b00; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">
+
+                            <!-- Radio + Address -->
+                            <label class="d-flex gap-3 align-items-start flex-grow-1" style="cursor: pointer;">
+                                <input type="radio" name="address" value="{{ addr.id }}" class="form-check-input mt-1"
+                                    required>
+                                <div style="max-width: 90%; word-break: break-word;">
+                                    <p class="fw-bold text-orange mb-1">{{ addr.full_name }}</p>
+                                    <p class="mb-0">{{ addr.street }}, {{ addr.state }} </p>
+                                    <p class="mb-0">{{ addr.landmark }}</p>
+                                    <p class="mb-0">{{ addr.city }}, {{ addr.pincode }}</p>
+                                    <p class="mb-0">{{ addr.phone }}</p>
+                                </div>
+                            </label>
+
+                            <!-- Action buttons -->
+                            <div class="ms-3 d-flex gap-2 mt-2 mt-md-0 ">
+                                <!-- <a href="{% url 'edit_address' addr.id %}" class="text-warning" title="Edit">
+                                    <i class="bi bi-pencil-square fs-5"></i>
+                                </a> -->
+                                <a href="{% url 'delete_address' addr.id %}" class="text-danger" title="Delete"
+                                    onclick="return confirm('Are you sure you want to delete this address?');">
+                                    <i class="bi bi-trash fs-5"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-danger text-center">No saved address</p>
+                    {% endif %}
+
+                    <!-- Add Address Button -->
+                    <div class="mt-4 text-center text-md-start">
+                        <a href="{% url 'add_address' %}" class="btn px-4 py-2 w-100 w-md-auto"
+                            style="background-color: #ff7b00; border: none; color: #fff; border-radius: 8px;">
+                            + Add Address
+                        </a>
+                    </div>
+
+                    <!-- Hidden Razorpay fields -->
+                    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id"
+                        value="{{ razorpay_order_id }}">
+                    <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+                </form>
+
+                <!-- Hidden form for failed payments -->
+                <form id="payment-failed-form" method="POST" action="{% url 'payment_failed' %}" style="display: none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="razorpay_order_id" id="failed_razorpay_order_id">
+                    <input type="hidden" name="address" id="failed_address">
+                    <input type="hidden" name="error_code" id="error_code">
+                    <input type="hidden" name="error_description" id="error_description">
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT: Payment -->
+        <!-- RIGHT: Payment -->
+        <div class="col-lg-6 col-md-6 col-12">
+            <div class="p-4 border rounded-4 shadow-lg text-white position-relative"
+                style="border: 2px solid #ff7b00; background: linear-gradient(145deg, #1a1a1a, #0d0d0d);">
+
+                <!-- Heading -->
+                <h2 class="mb-4 text-center text-md-start">
+                    <i class="fas fa-credit-card me-2 text-orange"></i> Payment
+                </h2>
+
+                <!-- Total Amount -->
+                <p class="fs-5 mb-4 text-center text-md-start">
+                    <i class="fas fa-wallet me-2 text-orange"></i> Total Amount:
+                    <span class="fw-bold text-orange">₹{{ total_price }}</span>
+                </p>
+
+                <!-- Razorpay Button -->
+                <button id="pay-btn"
+                    class="btn w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2"
+                    style="background-color: #ff7b00; border: none; color: #fff; border-radius: 10px; transition: all 0.3s ease;">
+                    <i class="fas fa-lock"></i> Pay Securely with Razorpay
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Razorpay JS -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById("pay-btn").onclick = function (e) {
+        e.preventDefault();
+
+        let selectedAddress = document.querySelector('input[name="address"]:checked');
+        if (!selectedAddress) {
+            alert("Please select an address before proceeding.");
+            return;
+        }
+
+        var options = {
+            "key": "{{ razorpay_key }}",
+            "amount": "{{ amount_paise }}",
+            "currency": "INR",
+            "name": "Aurora Cadence",
+            "description": "Order Payment",
+            "order_id": "{{ razorpay_order_id }}",
+            "handler": function (response) {
+                document.getElementById("razorpay_payment_id").value = response.razorpay_payment_id;
+                document.getElementById("razorpay_order_id").value = response.razorpay_order_id;
+                document.getElementById("razorpay_signature").value = response.razorpay_signature;
+                document.getElementById("checkout-form").submit();
+            },
+            "modal": {
+                "ondismiss": function() {
+                    console.log("Payment modal closed");
+                }
+            },
+            "prefill": {
+                "name": "{{ request.user.get_full_name|default:request.user.username }}",
+                "email": "{{ request.user.email }}",
+                "contact": ""
+            },
+            "theme": {
+                "color": "#ff7b00"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        
+        rzp1.on('payment.failed', function (resp) {
+            // Handle payment failure
+            let selectedAddress = document.querySelector('input[name="address"]:checked');
+            if (selectedAddress) {
+                document.getElementById("failed_razorpay_order_id").value = "{{ razorpay_order_id }}";
+                document.getElementById("failed_address").value = selectedAddress.value;
+                document.getElementById("error_code").value = resp.error.code || "PAYMENT_FAILED";
+                document.getElementById("error_description").value = resp.error.description || "Payment was unsuccessful";
+                document.getElementById("payment-failed-form").submit();
+            } else {
+                alert("Payment failed. Please try again.");
+            }
+        });
+        
+        rzp1.open();
+    }
+</script>
+
+<style>
+    .text-orange {
+        color: #ff7b00 !important;
+    }
+
+    .border-orange {
+        border-color: #ff7b00 !important;
+    }
+
+    /* Mobile Adjustments */
+    @media (max-width: 576px) {
+        .fs-5 {
+            font-size: 1rem !important;
+        }
+
+        .btn {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}

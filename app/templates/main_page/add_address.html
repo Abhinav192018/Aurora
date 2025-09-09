@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-dark py-5 px-3">
+    <div class="col-12 col-lg-8 bg-white rounded-4 shadow-lg p-5" style="border: 2px solid orange;">
+        <h2 class="text-center fw-bold mb-4 text-uppercase">Address</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <!-- Full Name -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">Full Name</label>
+                    {{ form.full_name|add_class:"form-control" }}
+                </div>
+
+                <!-- Phone -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    {{ form.phone|add_class:"form-control" }}
+                </div>
+
+                <!-- Street -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">Street</label>
+                    {{ form.street|add_class:"form-control" }}
+                </div>
+
+                <!-- City -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">City</label>
+                    {{ form.city|add_class:"form-control" }}
+                </div>
+
+                <!-- State -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">State</label>
+                    {{ form.state|add_class:"form-control" }}
+                </div>
+
+                <!-- Landmark -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">Landmark</label>
+                    {{ form.landmark|add_class:"form-control" }}
+                </div>
+
+                <!-- Pincode -->
+                <div class="col-6 mb-3">
+                    <label class="form-label">Pincode</label>
+                    {{ form.pincode|add_class:"form-control" }}
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex  mt-4">
+                <a href="{% url 'checkout' %}" class="btn btn-warning me-3 px-4">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-success px-4">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
